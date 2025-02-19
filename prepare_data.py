@@ -57,9 +57,9 @@ for text, label in test_data.take(100):
     test_texts.append(decoded_text)
     test_labels.append(label.numpy())
 
-print(test_texts[3])
+
 test_embeddings = be.get_embedding_batch(test_texts)
-print(test_embeddings[3])
+
 test_embeddings_binary = []
 for i in range(len(test_embeddings)):
     test_embeddings_binary.append(be.embeddingToBinary(test_embeddings[i]))
