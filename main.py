@@ -35,17 +35,21 @@ if "train_data" not in st.session_state or "test_data" not in st.session_state:
     st.session_state.train_data, st.session_state.test_data = dataset[0], dataset[1]
 
 batch_size = 2000
+if "batch_numbers" not in st.session_state:
+    st.session_state.batch_numbers = 1
 
 def train_agent():
     texts, labels = [], []
     # Take a batch from the training data
-    for text, label in st.session_state.train_data.take(batch_size):
-        texts.append(text.numpy().decode('utf-8'))
-        labels.append([int(label.numpy())])
-        
-    # Get embeddings and convert them to binary
-    embeddings = st.session_state.be.get_embedding_batch(texts)
-    binary_embeddings = [st.session_state.be.embeddingToBinary(embedding) for embedding in embeddings]
+    for i in range(st.session_state.batch_numbers):
+        num = i*batch_size
+        for text, label in st.session_state.train_data.skip(num).take(batch_size):
+            texts.append(text.numpy().decode('utf-8'))
+            labels.append([int(label.numpy())])
+            
+        # Get embeddings and convert them to binary
+        embeddings = st.session_state.be.get_embedding_batch(texts)
+        binary_embeddings = [st.session_state.be.embeddingToBinary(embedding) for embedding in embeddings]
     
     # Train the agent on the batch
     st.session_state.agent.next_state_batch(
@@ -88,7 +92,7 @@ def test_agent():
     total = len(test_embeddings_binary)
     st.write(f"Success rate: {success}/{total} ({(success/total)*100:.2f}%)")
 
-st.title("Sentiment Analysis with Session State")
+st.title("Sentiment Analysis")
 
 # Button to train the agent
 if st.button("Train Agent"):
