@@ -10,16 +10,16 @@ load_dotenv()
 api_key = os.environ.get("openai_api_key")
 
 arch_i, arch_z, arch_c = [1536], [10], [0]
-connector_function = "forward_full_conn"
+connector_function = "full_conn"
 Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
 agent = ao.Agent(Arch)
-
+agent.full_conn_compress = True
 
 client = OpenAI(api_key=api_key)
 be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=1536)
 
 
-batch_size = 1000
+batch_size = 2000
 
 # Load IMDb dataset
 dataset, info = tfds.load("imdb_reviews", split=["train", "test"], as_supervised=True, with_info=True)
@@ -34,13 +34,8 @@ for text, label in train_data.take(batch_size):
 
 embeddings = []
 
-# Generate embeddings for the current batch
-for i in range(batch_size):
 
-    response = be.get_embedding(texts[i])
-    embeddings.append(response)
-
-
+embeddings = be.get_embedding_batch(texts)
 
 # Convert to binary embeddings
 binary_embeddings = []
@@ -56,15 +51,22 @@ print("Training complete. Starting testing...")
 
 # Process test data
 test_texts, test_labels, test_embeddings = [], [], []
+
 for text, label in test_data.take(100):
     decoded_text = text.numpy().decode('utf-8')
     test_texts.append(decoded_text)
     test_labels.append(label.numpy())
-    test_embeddings.append(be.embeddingToBinary(be.get_embedding(decoded_text)))
+
+print(test_texts[3])
+test_embeddings = be.get_embedding_batch(test_texts)
+print(test_embeddings[3])
+test_embeddings_binary = []
+for i in range(len(test_embeddings)):
+    test_embeddings_binary.append(be.embeddingToBinary(test_embeddings[i]))
 
 # Evaluate agent
 success = 0
-for i, binary_embedding in enumerate(test_embeddings):
+for i, binary_embedding in enumerate(test_embeddings_binary):
     response = agent.next_state(binary_embedding, DD=False, unsequenced=True)
     agent.reset_state()
     prediction = 1 if sum(response) >= 5 else 0
