@@ -34,7 +34,7 @@ if "train_data" not in st.session_state or "test_data" not in st.session_state:
     dataset, info = tfds.load("imdb_reviews", split=["train", "test"], as_supervised=True, with_info=True)
     st.session_state.train_data, st.session_state.test_data = dataset[0], dataset[1]
 
-batch_size = 2000
+batch_size = 1000
 if "batch_numbers" not in st.session_state:
     st.session_state.batch_numbers = 1
 
@@ -83,12 +83,13 @@ def test_agent():
         print("Test: ", test_texts[i])
         print("Predicted: ", prediction, "Actual: ", test_labels[i])
         result = (f"Test: {test_texts[i]}\nPredicted: {prediction}, Actual: {test_labels[i]}\n")
+        st.write(result)
         if test_labels[i] == prediction:
             success += 1
             
     # Display results
 
-    st.write(result)
+    
     total = len(test_embeddings_binary)
     st.write(f"Success rate: {success}/{total} ({(success/total)*100:.2f}%)")
 
