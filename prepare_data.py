@@ -6,21 +6,26 @@ import ao_arch as ar
 from dotenv import load_dotenv
 import os
 import numpy as np
+import re
+
 
 np.random.seed(42)
+
+
+def clean_text(text):
+    return text
 
 load_dotenv()
 api_key = os.environ.get("openai_api_key")
 
-arch_i, arch_z, arch_c = [1024], [20], [0]
-connector_function = "forward_forward_conn"
+arch_i, arch_z, arch_c = [128], [20], [0]
+connector_function = "full_conn"
 Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
 agent = ao.Agent(Arch)
-#agent.full_conn_compress = True
+agent.full_conn_compress = True
 
 client = OpenAI(api_key=api_key)
-be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=1024)
-
+be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=1536)
 
 batch_size = 1000
 
@@ -43,7 +48,7 @@ for i in range(batch_numbers):
     num = i*batch_size
     print("getting", len(train_data.skip(num).take(batch_size)), "samples from", num, "to", num + batch_size)
     for text, label in train_data.skip(num).take(batch_size):
-        texts.append(text.numpy().decode('utf-8'))
+        texts.append(clean_text(text.numpy().decode('utf-8')))
         labels.append([int(label.numpy())])
         
     # Get embeddings and convert them to binary
@@ -77,7 +82,7 @@ print("Training complete. Starting testing...")
 test_texts, test_labels, test_embeddings = [], [], []
 
 for text, label in test_data.take(500):
-    decoded_text = text.numpy().decode('utf-8')
+    decoded_text = clean_text(text.numpy().decode('utf-8'))
     test_texts.append(decoded_text)
     test_labels.append(label.numpy())
 

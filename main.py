@@ -14,7 +14,7 @@ api_key = os.environ.get("openai_api_key")
 # Initialize agent in session_state if not already present
 
 
-arch_i, arch_z, arch_c = [1536], [10], [0]
+arch_i, arch_z, arch_c = [128], [10], [0]
 connector_function = "full_conn"
 Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
 agent = ao.Agent(Arch)
@@ -27,7 +27,7 @@ if "agent" not in st.session_state:
 
 # Initialize the binary embeddings instance in session_state if not already present
 if "be" not in st.session_state:
-    st.session_state.be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=1536)
+    st.session_state.be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=128)
 
 # Load the IMDb dataset into session_state if not already present
 if "train_data" not in st.session_state or "test_data" not in st.session_state:
@@ -83,7 +83,7 @@ def test_agent():
         print("Test: ", test_texts[i])
         print("Predicted: ", prediction, "Actual: ", test_labels[i])
         result = (f"Test: {test_texts[i]}\nPredicted: {prediction}, Actual: {test_labels[i]}\n")
-        st.write(result)
+        print(result)
         if test_labels[i] == prediction:
             success += 1
             
@@ -93,12 +93,12 @@ def test_agent():
     total = len(test_embeddings_binary)
     st.write(f"Success rate: {success}/{total} ({(success/total)*100:.2f}%)")
 
-st.title("Sentiment Analysis")
+st.title("Sentiment Analysis with WNNs through Binary Embeddings")
 
 # Button to train the agent
 if st.button("Train Agent"):
     train_agent()
-
+st.text("   ")
 # Button to test the agent
 if st.button("Test Agent with Dataset"):
     test_agent()
