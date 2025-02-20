@@ -6,6 +6,7 @@ import ao_arch as ar
 from dotenv import load_dotenv
 import os
 import streamlit as st
+import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -93,6 +94,14 @@ def test_agent():
     total = len(test_embeddings_binary)
     st.write(f"Success rate: {success}/{total} ({(success/total)*100:.2f}%)")
 
+
+st.set_page_config(
+    page_title="Sentiment Analysis with WNNs through Binary Embeddings",
+    page_icon=":guardsman:",
+    layout="wide",
+    )
+
+
 st.title("Sentiment Analysis with WNNs through Binary Embeddings")
 
 # Button to train the agent
@@ -104,20 +113,51 @@ if st.button("Test Agent with Dataset"):
     test_agent()
 
 # Allow custom text input for sentiment analysis
-st.subheader("Test with Custom Text")
-user_input = st.text_area("Enter text for sentiment analysis:")
+col1, col2 = st.columns(2)
 
-if st.button("Analyze Sentiment"):
-    if user_input:
-        # Get embedding for the input text and convert to binary
-        input_embedding = st.session_state.be.get_embedding(user_input)
-        binary_embedding = st.session_state.be.embeddingToBinary(input_embedding)
-        
-        # Get prediction from the agent
-        response = st.session_state.agent.next_state(binary_embedding, DD=False, unsequenced=True)
-        st.session_state.agent.reset_state()
-        prediction = 1 if sum(response) >= 5 else 0
-        sentiment = "Positive" if prediction == 1 else "Negative"
-        st.success(f"Sentiment: {sentiment}")
-    else:
-        st.warning("Please enter some text to analyze.")
+with col1:
+
+    st.subheader("Test with Custom Text")
+    user_input = st.text_area("Enter text for sentiment analysis:")
+
+    if st.button("Analyze Sentiment"):
+        if user_input:
+            # Get embedding for the input text and convert to binary
+            input_embedding = st.session_state.be.get_embedding(user_input)
+            binary_embedding = st.session_state.be.embeddingToBinary(input_embedding)
+            
+            # Get prediction from the agent
+            response = st.session_state.agent.next_state(binary_embedding, DD=False, unsequenced=True)
+            st.session_state.agent.reset_state()
+            prediction = 1 if sum(response) >= 5 else 0
+            sentiment = "Positive" if prediction == 1 else "Negative"
+            st.success(f"Sentiment: {sentiment}")
+        else:
+            st.warning("Please enter some text to analyze.")
+
+
+with col2:
+    st.subheader("Train with custom text")
+    custom_text = st.text_area("Enter custom text for training:")
+    custom_label = st.selectbox("Select label (0 for Negative, 1 for Positive):", [0, 1])
+    if custom_label == 0:
+        label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
+    elif custom_label == 1:
+        label = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  
+    if st.button("Train with Custom Text"):
+        if custom_text:
+            # Get embedding for the input text and convert to binary
+            input_embedding = st.session_state.be.get_embedding(custom_text)
+            binary_embedding = st.session_state.be.embeddingToBinary(input_embedding)
+            
+            # Train the agent with the custom text and label
+            st.session_state.agent.next_state(
+                INPUT=binary_embedding,
+                LABEL=label,
+                unsequenced=True,
+                DD=False,
+                print_result=True
+            )
+            st.success("Custom text trained successfully.")
+        else:
+            st.warning("Please enter some text to train.")
