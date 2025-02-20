@@ -57,10 +57,9 @@ def train_agent():
         INPUT=binary_embeddings,
         LABEL=labels,
         unsequenced=True,
-        DD=False,
         print_result=True
     )
-    st.success("Training complete. Starting testing...")
+    st.success("Training complete. Start testing...")
 
 def test_agent():
     test_texts, test_labels = [], []
@@ -78,7 +77,7 @@ def test_agent():
 
     # Evaluate the agent on each test sample
     for i, binary_embedding in enumerate(test_embeddings_binary):
-        response = st.session_state.agent.next_state(binary_embedding, DD=False, unsequenced=True)
+        response = st.session_state.agent.next_state(binary_embedding, unsequenced=True)
         st.session_state.agent.reset_state()
         prediction = 1 if sum(response) >= 5 else 0
         print("Test: ", test_texts[i])
@@ -127,7 +126,7 @@ with col1:
             binary_embedding = st.session_state.be.embeddingToBinary(input_embedding)
             
             # Get prediction from the agent
-            response = st.session_state.agent.next_state(binary_embedding, DD=False, unsequenced=True)
+            response = st.session_state.agent.next_state(binary_embedding, unsequenced=True)
             st.session_state.agent.reset_state()
             prediction = 1 if sum(response) >= 5 else 0
             sentiment = "Positive" if prediction == 1 else "Negative"
@@ -151,12 +150,7 @@ with col2:
             binary_embedding = st.session_state.be.embeddingToBinary(input_embedding)
             
             # Train the agent with the custom text and label
-            st.session_state.agent.next_state(
-                INPUT=binary_embedding,
-                LABEL=label,
-                unsequenced=True,
-                DD=False,
-                print_result=True
+            st.session_state.agent.next_state(INPUT=binary_embedding,LABEL=label,unsequenced=True, print_result=True
             )
             st.success("Custom text trained successfully.")
         else:
