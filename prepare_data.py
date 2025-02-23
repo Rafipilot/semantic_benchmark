@@ -25,7 +25,7 @@ agent = ao.Agent(Arch)
 agent.full_conn_compress = True
 
 client = OpenAI(api_key=api_key)
-be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=1536)
+be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=128)
 
 batch_size = 1000
 

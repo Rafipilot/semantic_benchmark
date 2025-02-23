@@ -1,0 +1,7 @@
+git+https://github.com/aolabsai/ao_embeddings
+tensorflow_datasets
+streamlit
+numpy
+openai
+dotenv
+tensorflow

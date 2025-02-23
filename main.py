@@ -8,6 +8,8 @@ import os
 import streamlit as st
 import numpy as np
 
+np.random.seed(42)
+
 # Load environment variables
 load_dotenv()
 api_key = os.environ.get("openai_api_key")
@@ -15,7 +17,7 @@ api_key = os.environ.get("openai_api_key")
 # Initialize agent in session_state if not already present
 
 
-arch_i, arch_z, arch_c = [128], [10], [0]
+arch_i, arch_z, arch_c = [128], [20], [0]
 connector_function = "full_conn"
 Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
 agent = ao.Agent(Arch)
@@ -53,19 +55,14 @@ def train_agent():
         binary_embeddings = [st.session_state.be.embeddingToBinary(embedding) for embedding in embeddings]
     
     # Train the agent on the batch
-    st.session_state.agent.next_state_batch(
-        INPUT=binary_embeddings,
-        LABEL=labels,
-        unsequenced=True,
-        print_result=True
-    )
+    st.session_state.agent.next_state_batch(INPUT=binary_embeddings, LABEL=labels, unsequenced=True, print_result=True)
     st.success("Training complete. Start testing...")
 
 def test_agent():
     test_texts, test_labels = [], []
     
     # Take a sample from the test data
-    for text, label in st.session_state.test_data.take(100):
+    for text, label in st.session_state.test_data.take(500):
         test_texts.append(text.numpy().decode('utf-8'))
         test_labels.append(label.numpy())
         
@@ -79,7 +76,7 @@ def test_agent():
     for i, binary_embedding in enumerate(test_embeddings_binary):
         response = st.session_state.agent.next_state(binary_embedding, unsequenced=True)
         st.session_state.agent.reset_state()
-        prediction = 1 if sum(response) >= 5 else 0
+        prediction = 1 if sum(response) >= 9 else 0
         print("Test: ", test_texts[i])
         print("Predicted: ", prediction, "Actual: ", test_labels[i])
         result = (f"Test: {test_texts[i]}\nPredicted: {prediction}, Actual: {test_labels[i]}\n")
@@ -96,12 +93,15 @@ def test_agent():
 
 st.set_page_config(
     page_title="Sentiment Analysis with WNNs through Binary Embeddings",
-    page_icon=":guardsman:",
     layout="wide",
     )
 
 
 st.title("Sentiment Analysis with WNNs through Binary Embeddings")
+
+st.text("This agent is trained on the IMDb dataset for sentiment analysis. You can test the agent with custom text or train it with custom text and label.")
+
+st.text("We first get the embedding of each review using OpenAI's GPT-3 model. We then convert the embeddings to binary using Gaussian Random Projection. The binary embeddings are then used to train the agent.")
 
 # Button to train the agent
 if st.button("Train Agent"):
@@ -116,8 +116,8 @@ col1, col2 = st.columns(2)
 
 with col1:
 
-    st.subheader("Test with Custom Text")
-    user_input = st.text_area("Enter text for sentiment analysis:")
+    st.subheader("Test with Custom review")
+    user_input = st.text_area("Enter review for sentiment analysis:")
 
     if st.button("Analyze Sentiment"):
         if user_input:
@@ -136,8 +136,8 @@ with col1:
 
 
 with col2:
-    st.subheader("Train with custom text")
-    custom_text = st.text_area("Enter custom text for training:")
+    st.subheader("Train with custom review")
+    custom_text = st.text_area("Enter custom review for training:")
     custom_label = st.selectbox("Select label (0 for Negative, 1 for Positive):", [0, 1])
     if custom_label == 0:
         label = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 

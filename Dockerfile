@@ -30,17 +30,20 @@ RUN apt-get update && \
 COPY . /app
 # COPY misc/index.html /usr/local/lib/python3.12/site-packages/streamlit/static/index.html
 
+RUN --mount=type=secret,id=env,target=/app/.env \
+    export $(grep -v '^#' .env | xargs) && \
+    pip install git+https://${ao_github_PAT}@github.com/aolabsai/ao_core.git
+
 # Install dependencies from the requirements file
 RUN pip install -r requirements.txt
 
-RUN python add_meta_tags.py
 
 # Install AO modules, ao_core and ao_arch
 #    Notes: - ao_core is a private repo; say hi for access: https://calendly.com/aee/aolabs or https://discord.com/invite/nHuJc4Y4n7
 #           - already have access? generate your Personal Access Token from github here: https://github.com/settings/tokens?type=beta 
-RUN --mount=type=secret,id=env,target=/app/.env \
-    export $(grep -v '^#' .env | xargs) && \
-    pip install git+https://${ao_github_PAT}@github.com/aolabsai/ao_core.git
+# RUN --mount=type=secret,id=env,target=/app/.env \
+#     export $(grep -v '^#' .env | xargs) && \
+#     pip install git+https://${ao_github_PAT}@github.com/aolabsai/ao_core.git
 RUN pip install git+https://github.com/aolabsai/ao_arch.git
 
 EXPOSE 8501
