@@ -18,8 +18,8 @@ api_key = os.environ.get("openai_api_key")
 
 
 arch_i, arch_z, arch_c = [128], [20], [0]
-connector_function = "full_conn"
-Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
+
+Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function="full_conn", description="none")
 agent = ao.Agent(Arch)
 agent.full_conn_compress = True
 

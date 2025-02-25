@@ -18,18 +18,18 @@ def clean_text(text):
 load_dotenv()
 api_key = os.environ.get("openai_api_key")
 
-arch_i, arch_z, arch_c = [128], [20], [0]
+arch_i, arch_z, arch_c = [512], [20], [0]
 connector_function = "full_conn"
 Arch = ar.Arch(arch_i, arch_z, arch_c, connector_function, description="none")
 agent = ao.Agent(Arch)
-agent.full_conn_compress = True
+#agent.full_conn_compress = True
 
 client = OpenAI(api_key=api_key)
-be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=128)
+be = be.binaryEmbeddings(api_key, cacheName="cache.json", numberBinaryDigits=512)
 
-batch_size = 1000
+batch_size = 2000
 
-batch_numbers = 2
+batch_numbers = 5
 
 # Load IMDb dataset
 print("Loading IMDb dataset...")
@@ -74,7 +74,7 @@ print("Training agent on", len(binary_embeddings), "samples")
 # Train the agent on the batch
 
 
-agent.next_state_batch(INPUT=binary_embeddings, LABEL=labels, unsequenced=True, print_result=True)
+agent.next_state_batch(INPUT=binary_embeddings, LABEL=labels, DD=False, Hamming=False, Backprop=True, Backprop_epochs=10, unsequenced=True, print_result=True)
 
 print("Training complete. Starting testing...")
 
